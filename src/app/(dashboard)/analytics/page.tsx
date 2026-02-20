@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -433,51 +435,62 @@ function InteractivePieChart({ data, colors }: { data: { label: string; value: n
 function ChartCard({ title, description, explanation, insight, recommendation, children }: {
   title: string
   description: string
-  explanation: string
+  explanation?: string
   insight?: string
   recommendation?: string
   children: React.ReactNode
 }) {
+  const [showInsight, setShowInsight] = React.useState(false)
+  const hasInsight = !!(insight || recommendation)
+  
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-2">
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="pb-2 border-b">
         <div>
           <CardTitle className="text-xl font-bold text-slate-800">{title}</CardTitle>
           <CardDescription className="text-sm text-slate-500 mt-1">{description}</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 min-h-[280px]">
+      <CardContent className="flex-1 min-h-[280px] p-4">
         {children}
       </CardContent>
       
-      {/* Insight & Rekomendasi - Always visible */}
-      {(insight || recommendation) && (
-        <div className="px-4 pb-4">
-          {insight && recommendation ? (
-            <div className="bg-gradient-to-r from-amber-50 to-green-50 rounded-xl p-4 border-l-4 border-amber-400">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">💡</span>
-                <h4 className="font-bold text-amber-800 text-xs uppercase tracking-wide">Insight & Rekomendasi</h4>
-              </div>
-              <p className="text-xs text-slate-700 leading-relaxed">{insight} {recommendation}</p>
+      {/* Insight & Rekomendasi - Improved with shadcn style */}
+      {hasInsight && (
+        <div className="border-t bg-slate-50/50">
+          <button 
+            onClick={() => setShowInsight(!showInsight)}
+            className="w-full px-4 py-2 flex items-center justify-between hover:bg-slate-100 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                Insight
+              </Badge>
             </div>
-          ) : insight ? (
-            <div className="bg-amber-50 rounded-xl p-4 border-l-4 border-amber-500">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">💡</span>
-                <h4 className="font-bold text-amber-800 text-xs uppercase tracking-wide">Insight</h4>
-              </div>
-              <p className="text-xs text-amber-900 leading-relaxed">{insight}</p>
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showInsight ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {showInsight && (
+            <div className="px-4 pb-4 space-y-3">
+              {insight && (
+                <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
+                  <div className="flex items-start gap-2">
+                    <TrendingUp className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-slate-700 leading-relaxed">{insight}</p>
+                  </div>
+                </div>
+              )}
+              {recommendation && (
+                <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-slate-700 leading-relaxed">{recommendation}</p>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : recommendation ? (
-            <div className="bg-green-50 rounded-xl p-4 border-l-4 border-green-500">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">🎯</span>
-                <h4 className="font-bold text-green-800 text-xs uppercase tracking-wide">Rekomendasi</h4>
-              </div>
-              <p className="text-xs text-green-900 leading-relaxed">{recommendation}</p>
-            </div>
-          ) : null}
+          )}
         </div>
       )}
     </Card>
@@ -759,55 +772,55 @@ function AnalyticsContent() {
         onClearFilters={clearFilters}
       />
 
-      {/* Summary Stats - KPI Cards with better styling */}
+      {/* Summary Stats - KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2 font-bold">
-              <TrendingUp className="w-4 h-4 text-blue-600" /> Total Pesanan
+            <CardDescription className="flex items-center gap-2 font-semibold text-blue-700">
+              <TrendingUp className="w-4 h-4" /> Total Pesanan
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-blue-700">{data.totalOrders.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-blue-800">{data.totalOrders.toLocaleString()}</p>
             <p className="text-xs text-blue-600/70 mt-1">Berdasarkan filter aktif</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
           <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2 font-bold">
-              <CheckCircle2 className="w-4 h-4 text-green-600" /> Tepat Waktu
+            <CardDescription className="flex items-center gap-2 font-semibold text-emerald-700">
+              <CheckCircle2 className="w-4 h-4" /> Tepat Waktu
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-green-600">{data.delayStats.rate.toFixed(1)}%</p>
-            <p className="text-xs text-green-600/70 mt-1">
-              {data.delayStats.onTime} dari {data.totalOrders} pesanan</p>
+            <p className="text-3xl font-bold text-emerald-800">{data.delayStats.rate.toFixed(1)}%</p>
+            <p className="text-xs text-emerald-600/70 mt-1">
+              {data.delayStats.onTime.toLocaleString()} pesanan</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+        <Card className="bg-gradient-to-br from-rose-50 to-rose-100 border-rose-200">
           <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2 font-bold">
-              <AlertTriangle className="w-4 h-4 text-red-600" /> Terlambat
+            <CardDescription className="flex items-center gap-2 font-semibold text-rose-700">
+              <AlertTriangle className="w-4 h-4" /> Terlambat
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-red-600">{data.delayStats.delayed}</p>
-            <p className="text-xs text-red-600/70 mt-1">
+            <p className="text-3xl font-bold text-rose-800">{data.delayStats.delayed.toLocaleString()}</p>
+            <p className="text-xs text-rose-600/70 mt-1">
               {data.totalOrders > 0 ? ((data.delayStats.delayed / data.totalOrders) * 100).toFixed(1) : 0}% dari total</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <Card className="bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200">
           <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2 font-bold">
-              <Clock className="w-4 h-4 text-purple-600" /> Jam Sibuk
+            <CardDescription className="flex items-center gap-2 font-semibold text-violet-700">
+              <Clock className="w-4 h-4" /> Jam Sibuk
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-purple-700">{getPeakHour()}</p>
-            <p className="text-xs text-purple-600/70 mt-1">Volume pesanan tertinggi</p>
+            <p className="text-3xl font-bold text-violet-800">{getPeakHour()}</p>
+            <p className="text-xs text-violet-600/70 mt-1">Puncak pesanan</p>
           </CardContent>
         </Card>
       </div>
@@ -815,11 +828,10 @@ function AnalyticsContent() {
       {/* Charts Grid - Row 1: Trend & Restaurant */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard 
-          title="Pesanan per Bulan"
-          description="Melihat tren penjualan pizza dari bulan ke bulan"
-          explanation="Grafik garis ini menunjukkan jumlah pesanan pizza setiap bulan. Garis yang naik menandakan penjualan sedang bagus, sedangkan garis turun menandakan butuh perhatian. Gunakan ini untuk melihat pola musiman dan merencanakan strategi bisnis."
-          insight={`Bulan ini ada ${data.ordersByMonth[data.ordersByMonth.length - 1]?.count || 0} pesanan. ${data.ordersByMonth.length > 1 ? (data.ordersByMonth[data.ordersByMonth.length - 1].count > data.ordersByMonth[0].count ? 'Penjualan cenderung naik 📈' : 'Penjualan cenderung turun 📉') : 'Data belum cukup untuk analisis'}.`}
-          recommendation="Kalau penjualan turun, pertimbangkan promo atau diskon. Kalau naik, pastikan stock bahan baku mencukupi untuk bulan depan."
+          title="Tren Pesanan per Bulan"
+          description="Visualisasi tren penjualan pizza dari waktu ke waktu"
+          insight={`Bulan ini ada ${data.ordersByMonth[data.ordersByMonth.length - 1]?.count || 0} pesanan. ${data.ordersByMonth.length > 1 ? (data.ordersByMonth[data.ordersByMonth.length - 1].count > data.ordersByMonth[0].count ? 'Tren positif 📈' : 'Tren perlu perhatian 📉') : 'Data belum cukup untuk analisis'}.`}
+          recommendation="Pastikan stock bahan baku mencukupi. Pertimbangkan promo pada bulan dengan penjualan rendah."
         >
           <InteractiveLineChart 
             data={data.ordersByMonth.map(d => ({ label: d.month.slice(0, 3), value: d.count }))} 
@@ -829,11 +841,10 @@ function AnalyticsContent() {
 
         {showRestaurantComparison && data.ordersByRestaurant.length > 0 && (
           <ChartCard 
-            title="Pesanan per Restauran"
-            description="Membandingkan kinerja 5 restoran pizza"
-            explanation="Grafik batang ini membandingkan jumlah pesanan antar 5 restoran (Domino's, Pizza Hut, Little Caesars, Papa John's, Marco's). Bar yang lebih tinggi berarti restoran itu lebih banyak mendapat pesanan. Berguna untuk evaluasi kinerja masing-masing unit."
-            insight={`Restoran dengan pesanan tertinggi: ${data.ordersByRestaurant.sort((a, b) => b.count - a.count)[0]?.restaurant || '-'} (${data.ordersByRestaurant.sort((a, b) => b.count - a.count)[0]?.count || 0} pesanan). Restoran dengan pesanan terendah perlu dievaluasi.`}
-            recommendation="Berikan perhatian ekstra ke restoran dengan pesanan rendah. Pelajari apa yang dilakukan restoran dengan pesanan tinggi dan terapkan di restoran lain."
+            title="Performa Restoran"
+            description="Perbandingan jumlah pesanan antar restoran"
+            insight={`Restoran terbaik: ${data.ordersByRestaurant.sort((a, b) => b.count - a.count)[0]?.restaurant || '-'} (${data.ordersByRestaurant.sort((a, b) => b.count - a.count)[0]?.count || 0} pesanan).`}
+            recommendation="Evaluasi restoran dengan pesanan rendah dan tiru strategi dari restoran terbaik."
           >
             <InteractiveBarChart 
               data={data.ordersByRestaurant.map(d => ({ label: d.restaurant, value: d.count }))} 
@@ -846,21 +857,19 @@ function AnalyticsContent() {
       {/* Charts Grid - Row 2: Pizza Stats (3 columns) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <ChartCard 
-          title="Pesanan per Ukuran Pizza"
-          description="ukuran pizza apa yang paling banyak dipesan"
-          explanation="Grafik lingkaran ini menunjukkan prefersi pelanggan dalam memilih ukuran pizza. Bagian yang lebih besar berarti ukuran tersebut lebih banyak dipesan. Ini penting untuk menentukan jumlah stock bahan baku."
-          insight={`Ukuran paling favorit: ${data.ordersBySize[0]?.size || '-'} dengan ${data.ordersBySize[0]?.count || 0} pesanan.`}
-          recommendation="Pastikan stock bahan untuk ukuran favorit selalu ada. Untuk ukuran yang jarang dipesan, coba buat bundle promo agar lebih banyak dipesan."
+          title="Distribusi Ukuran Pizza"
+          description="Preferensi ukuran pizza yang dipesan pelanggan"
+          insight={`Ukuran favorit: ${data.ordersBySize[0]?.size || '-'} (${data.ordersBySize[0]?.count || 0} pesanan).`}
+          recommendation="Pastikan stock bahan untuk ukuran populer selalu tersedia."
         >
           <InteractivePieChart data={data.ordersBySize.map(d => ({ label: d.size, value: d.count }))} />
         </ChartCard>
 
         <ChartCard 
-          title="Pesanan per Jenis Pizza"
-          description="Mengetahui rasa pizza favorit pelanggan"
-          explanation="Grafik donat ini menampilkan jenis/varian pizza apa yang paling banyak dipesan pelanggan. Bagian yang lebih besar berarti rasa tersebut lebih populer. Gunakan ini untuk menentukan menu andalan dan mengembangkan flavor baru."
-          insight={`Jenis pizza terlaris: ${data.ordersByType[0]?.type || '-'}. Jenis paling tidak laku: ${data.ordersByType[data.ordersByType.length - 1]?.type || '-'}.`}
-          recommendation="Fokuskan marketing pada pizza terlaris. Untuk pizza yang jarang dipesan, pertimbangkan untuk ganti menu atau buat variasi baru yang lebih menarik."
+          title="Jenis Pizza Populer"
+          description="Ranking pizza berdasarkan jumlah pesanan"
+          insight={`Terlaris: ${data.ordersByType[0]?.type || '-'}. Tidak laku: ${data.ordersByType[data.ordersByType.length - 1]?.type || '-'}.`}
+          recommendation="Fokuskan marketing pada pizza terlaris."
         >
           <InteractivePieChart 
             data={data.ordersByType.map(d => ({ label: d.type, value: d.count }))} 
@@ -870,10 +879,9 @@ function AnalyticsContent() {
 
         <ChartCard 
           title="Metode Pembayaran"
-          description="Preferensi cara bayar pelanggan (tunai/non-tunai)"
-          explanation="Grafik donat ini menunjukkan bagaimana pelanggan membayar - apakah pakai Cash (tunai), Card (kartu), atau E-Wallet (digital). Penting untuk memastikan sistem pembayaran sesuai dengan keinginan pelanggan."
-          insight={`Metode paling favorit: ${data.paymentStats[0]?.method || '-'}.`}
-          recommendation="Pastikan sistem pembayaran favorit selalu lancar. Bisa juga berikan insentif untuk metode pembayaran yang ingin digenjot (misalnya: diskon e-wallet)."
+          description="Preferensi pelanggan dalam metode pembayaran"
+          insight={`Paling populer: ${data.paymentStats[0]?.method || '-'}.`}
+          recommendation="Pastikan sistem pembayaran utama selalu berjalan lancer."
         >
           <InteractivePieChart 
             data={data.paymentStats.map(d => ({ label: d.method, value: d.count }))} 
@@ -886,11 +894,10 @@ function AnalyticsContent() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {(data.ordersByLocation.length > 0 || showRestaurantComparison) && (
           <ChartCard 
-            title="Lokasi Teratas"
-            description="Area/geografis dengan pesanan tertinggi"
-            explanation="Grafik batang ini menampilkan 10 area/lokasi dengan volume pesanan tertinggi. Berguna untuk strategi ekspansi bisnis, optimasi rute delivery, dan perencanaan pembukaan cabang baru di area yang berpotensi."
-            insight={`Area dengan pesanan tertinggi: ${data.ordersByLocation[0]?.location || '-'} dengan ${data.ordersByLocation[0]?.count || 0} pesanan.`}
-            recommendation="Pertimbangkan ekspansi bisnis ke area sekitar lokasi dengan demand tinggi. Optimasi delivery routes untuk area-area ini agar pengiriman lebih efisien."
+            title="Lokasi dengan Pesanan Tertinggi"
+            description="Area geografis dengan volume pesanan tertinggi"
+            insight={`Terbaik: ${data.ordersByLocation[0]?.location || '-'} (${data.ordersByLocation[0]?.count || 0} pesanan).`}
+            recommendation="Optimasi rute delivery untuk area tersebut."
           >
             <InteractiveBarChart 
               data={data.ordersByLocation.slice(0, 10).map(d => ({ 
@@ -904,11 +911,10 @@ function AnalyticsContent() {
 
         {data.peakHourStats.length > 0 && (
           <ChartCard 
-            title="Pesanan per Jam"
-            description="Waktu terbaik untuk beroperasi (jam sibuk vs sepi)"
-            explanation="Grafik batang ini menampilkan distribusi pesanan berdasarkan jam pemesanan (0-23). Dengan ini kamu bisa melihat jam berapa paling banyak pesanan (sibuk) dan jam apa yang sepi. Berguna untuk mengatur jadwal staff dan driver."
-            insight={`Jam tersibuk: ${getPeakHour()} dengan volume pesanan tertinggi. Peak hours (11:00-13:00 dan 18:00-21:00) menyumbang ~${Math.round((data.peakHourStats.filter(h => (h.hour >= 11 && h.hour <= 13) || (h.hour >= 18 && h.hour <= 21)).reduce((sum, h) => sum + h.count, 0) / data.totalOrders * 100))}% dari total pesanan.`}
-            recommendation="Tingkatkan jumlah staff dan driver pada jam-jam sibuk (11:00-13:00 dan 18:00-21:00). Pertimbangkan sistem shift fleksibel untuk mengakomodasi pola ini."
+            title="Distribusi Pesanan per Jam"
+            description="Analisis jam sibuk dan jam sepi"
+            insight={`Jam tersibuk: ${getPeakHour()}. Peak hours menyumbang ~${Math.round((data.peakHourStats.filter(h => (h.hour >= 11 && h.hour <= 13) || (h.hour >= 18 && h.hour <= 21)).reduce((sum, h) => sum + h.count, 0) / data.totalOrders * 100))}% dari total.`}
+            recommendation="Tingkatkan staff pada jam sibuk (11-13 & 18-21)."
           >
             <InteractiveBarChart 
               data={data.peakHourStats.map(d => ({ label: `${d.hour}:00`, value: d.count }))} 

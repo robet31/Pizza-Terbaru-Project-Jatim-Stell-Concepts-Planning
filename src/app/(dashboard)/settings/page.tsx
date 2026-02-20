@@ -121,8 +121,8 @@ export default function SettingsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Daftar Restoran</CardTitle>
-                <CardDescription>Kelola restoran yang terdaftar</CardDescription>
+                <CardTitle>Kelola Restoran</CardTitle>
+                <CardDescription>Daftar restoran yang terdaftar dalam sistem</CardDescription>
               </div>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-2" />
@@ -163,8 +163,8 @@ export default function SettingsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Daftar Users</CardTitle>
-                <CardDescription>Kelola pengguna sistem</CardDescription>
+                <CardTitle>Kelola Pengguna</CardTitle>
+                <CardDescription>Daftar pengguna sistem dan role akses</CardDescription>
               </div>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-2" />

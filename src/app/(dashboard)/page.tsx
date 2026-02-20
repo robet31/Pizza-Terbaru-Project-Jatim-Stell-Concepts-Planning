@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -10,15 +12,18 @@ import {
   Clock, 
   AlertTriangle,
   CheckCircle,
+  CheckCircle2,
   TrendingUp,
   MapPin,
   Calendar,
   ArrowUpRight,
   Info,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 // ==================== TOOLTIP CONTEXT ====================
 interface TooltipContextType {
@@ -374,51 +379,62 @@ function KPICard({
 function ChartCard({ title, description, explanation, insight, recommendation, children }: {
   title: string
   description: string
-  explanation: string
+  explanation?: string
   insight?: string
   recommendation?: string
   children: React.ReactNode
 }) {
+  const [showInsight, setShowInsight] = React.useState(false)
+  const hasInsight = !!(insight || recommendation)
+  
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-2">
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="pb-2 border-b">
         <div>
           <CardTitle className="text-xl font-bold text-slate-800">{title}</CardTitle>
           <CardDescription className="text-sm text-slate-500 mt-1">{description}</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 min-h-[280px]">
+      <CardContent className="flex-1 min-h-[280px] p-4">
         {children}
       </CardContent>
       
-      {/* Insight & Rekomendasi - Always visible */}
-      {(insight || recommendation) && (
-        <div className="px-4 pb-4">
-          {insight && recommendation ? (
-            <div className="bg-gradient-to-r from-amber-50 to-green-50 rounded-xl p-4 border-l-4 border-amber-400">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">💡</span>
-                <h4 className="font-bold text-amber-800 text-xs uppercase tracking-wide">Insight & Rekomendasi</h4>
-              </div>
-              <p className="text-xs text-slate-700 leading-relaxed">{insight} {recommendation}</p>
+      {/* Insight & Rekomendasi - Improved with shadcn style */}
+      {hasInsight && (
+        <div className="border-t bg-slate-50/50">
+          <button 
+            onClick={() => setShowInsight(!showInsight)}
+            className="w-full px-4 py-2 flex items-center justify-between hover:bg-slate-100 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                Insight
+              </Badge>
             </div>
-          ) : insight ? (
-            <div className="bg-amber-50 rounded-xl p-4 border-l-4 border-amber-500">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">💡</span>
-                <h4 className="font-bold text-amber-800 text-xs uppercase tracking-wide">Insight</h4>
-              </div>
-              <p className="text-xs text-amber-900 leading-relaxed">{insight}</p>
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showInsight ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {showInsight && (
+            <div className="px-4 pb-4 space-y-3">
+              {insight && (
+                <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
+                  <div className="flex items-start gap-2">
+                    <TrendingUp className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-slate-700 leading-relaxed">{insight}</p>
+                  </div>
+                </div>
+              )}
+              {recommendation && (
+                <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-slate-700 leading-relaxed">{recommendation}</p>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : recommendation ? (
-            <div className="bg-green-50 rounded-xl p-4 border-l-4 border-green-500">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">🎯</span>
-                <h4 className="font-bold text-green-800 text-xs uppercase tracking-wide">Rekomendasi</h4>
-              </div>
-              <p className="text-xs text-green-900 leading-relaxed">{recommendation}</p>
-            </div>
-          ) : null}
+          )}
         </div>
       )}
     </Card>
@@ -587,10 +603,9 @@ function DashboardContent() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ChartCard
             title="Tren Pesanan"
-            description="Melihat tren penjualan pizza dari bulan ke bulan"
-            explanation="Grafik garis ini menunjukkan jumlah pesanan pizza dari waktu ke waktu. Garis yang naik berarti penjualan bagus, garis turun berarti butuh perhatian. Gunakan ini untuk melihat pola musiman dan merencanakan strategi bisnis."
-            insight={`Total pesanan ${stats?.totalOrders?.toLocaleString()} dengan rata-rata ${Math.round((stats?.totalOrders || 0) / 12)} pesanan per bulan.`}
-            recommendation="Gunakan tren ini untuk merencanakan inventory dan staffing. Jika tren naik, pertimbangkan menambah sumber daya."
+            description="Visualisasi tren penjualan pizza dari waktu ke waktu"
+            insight={`Total pesanan ${stats?.totalOrders?.toLocaleString()} dengan rata-rata ${Math.round((stats?.totalOrders || 0) / 12)} per bulan.`}
+            recommendation="Rencanakan inventory dan staffing berdasarkan tren."
           >
             {stats?.deliveryPerformance?.length ? (
               <InteractiveLineChart data={stats.deliveryPerformance} color={COLORS.primary} />
@@ -598,11 +613,10 @@ function DashboardContent() {
           </ChartCard>
 
           <ChartCard
-            title="Pesanan per Restauran"
-            description="Membandingkan kinerja antar 5 restoran pizza"
-            explanation="Grafik batang ini membandingkan jumlah pesanan antar 5 restoran pizza. Bar yang lebih tinggi berarti restoran tersebut lebih banyak mendapat pesanan. Berguna untuk evaluasi kinerja masing-masing unit."
-            insight={`Restoran dengan pesanan tertinggi memiliki ${Math.max(...(stats?.ordersByRestaurant?.map(r => r.value) || [0]))} pesanan.`}
-            recommendation="Berikan resources lebih ke restoran dengan volume tinggi dan evaluasi restoran dengan performa rendah."
+            title="Performa Restoran"
+            description="Perbandingan jumlah pesanan antar restoran"
+            insight={`Tertinggi: ${Math.max(...(stats?.ordersByRestaurant?.map(r => r.value) || [0]))} pesanan.`}
+            recommendation="Evaluasi restoran dengan performa rendah."
           >
             {stats?.ordersByRestaurant?.length ? (
               <InteractiveBarChart data={stats.ordersByRestaurant} color={COLORS.primary} />
@@ -612,11 +626,10 @@ function DashboardContent() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <ChartCard
-            title="Distribusi Ukuran"
-            description="Mengetahui ukuran pizza favorit pelanggan"
-            explanation="Grafik donat ini menunjukkan preferensi pelanggan dalam memilih ukuran pizza (Small, Medium, Large, XL). Bagian yang lebih besar berarti ukuran tersebut lebih banyak dipesan. Penting untuk menentukan stock bahan baku."
-            insight={`Ukuran paling populer: ${stats?.pizzaSizes?.sort((a, b) => b.value - a.value)[0]?.label || '-'} dengan ${stats?.pizzaSizes?.sort((a, b) => b.value - a.value)[0]?.value || 0} pesanan.`}
-            recommendation="Pastikan stock bahan untuk ukuran populer selalu tersedia. Pertimbangkan promo untuk ukuran yang kurang populer."
+            title="Distribusi Ukuran Pizza"
+            description="Preferensi ukuran pizza yang dipesan pelanggan"
+            insight={`Terpopuler: ${stats?.pizzaSizes?.sort((a, b) => b.value - a.value)[0]?.label || '-'} (${stats?.pizzaSizes?.sort((a, b) => b.value - a.value)[0]?.value || 0} pesanan).`}
+            recommendation="Pastikan stock untuk ukuran populer selalu tersedia."
           >
             {stats?.pizzaSizes?.length ? (
               <InteractivePieChart data={stats.pizzaSizes} />
@@ -624,11 +637,10 @@ function DashboardContent() {
           </ChartCard>
 
           <ChartCard
-            title="Jenis Pizza"
-            description="Mengetahui rasa pizza favorit pelanggan"
-            explanation="Grafik donat ini menampilkan jenis/varian pizza yang paling banyak dipesan. Dari sini bisa diketahui rasa pizza apa yang paling digemari pelanggan."
-            insight={`Jenis pizza terlaris: ${stats?.pizzaTypes?.sort((a, b) => b.value - a.value)[0]?.label || '-'}.`}
-            recommendation="Fokuskan marketing pada jenis populer dan coba variasi baru untuk jenis yang kurang laku."
+            title="Jenis Pizza Populer"
+            description="Ranking pizza berdasarkan jumlah pesanan"
+            insight={`Terlaris: ${stats?.pizzaTypes?.sort((a, b) => b.value - a.value)[0]?.label || '-'}.`}
+            recommendation="Fokuskan marketing pada pizza terlaris."
           >
             {stats?.pizzaTypes?.length ? (
               <InteractivePieChart data={stats.pizzaTypes} colors={[COLORS.secondary, '#7c3aed', '#059669', '#dc2626', '#f59e0b', '#06b6d4']} />
@@ -637,10 +649,9 @@ function DashboardContent() {
 
           <ChartCard
             title="Metode Pembayaran"
-            description="Preferensi cara bayar pelanggan"
-            explanation="Grafik donat ini menunjukkan bagaimana pelanggan membayar - apakah pakai Cash (tunai), Card (kartu), atau E-Wallet. Penting untuk memastikan sistem pembayaran sesuai keinginan pelanggan."
-            insight={`Metode paling populer: ${stats?.paymentMethods?.sort((a, b) => b.value - a.value)[0]?.label || '-'} (${((stats?.paymentMethods?.sort((a, b) => b.value - a.value)[0]?.value || 0) / (stats?.totalOrders || 1) * 100).toFixed(1)}%).`}
-            recommendation="Pastikan sistem payment method populer selalu berjalan lancar. Pertimbangkan insentif untuk metode yang ingin dipromosikan."
+            description="Preferensi pelanggan dalam metode pembayaran"
+            insight={`Terpopuler: ${stats?.paymentMethods?.sort((a, b) => b.value - a.value)[0]?.label || '-'} (${((stats?.paymentMethods?.sort((a, b) => b.value - a.value)[0]?.value || 0) / (stats?.totalOrders || 1) * 100).toFixed(1)}%).`}
+            recommendation="Pastikan sistem pembayaran utama berjalan lancer."
           >
             {stats?.paymentMethods?.length ? (
               <InteractivePieChart data={stats.paymentMethods} colors={[COLORS.accent, COLORS.primary, COLORS.warning, COLORS.danger, COLORS.cyan]} />
@@ -651,10 +662,9 @@ function DashboardContent() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <ChartCard
             title="Jam Sibuk"
-            description="Jam dengan volume pesanan tertinggi"
-            explanation="Grafik batang ini menampilkan jam-jam dengan volume pesanan tertinggi. Berguna untuk mengatur jadwal staff dan driver agar bisa melayani lebih banyak pelanggan saat sibuk."
-            insight={`Jam sibuk: ${stats?.peakHours?.sort((a, b) => b.value - a.value).slice(0, 3).map(h => h.label).join(', ') || '-'}`}
-            recommendation="Tingkatkan staffing pada jam sibuk (11:00-13:00 dan 18:00-21:00) untuk mengurangi waktu tunggu."
+            description="Analisis jam dengan volume pesanan tertinggi"
+            insight={`Puncak: ${stats?.peakHours?.sort((a, b) => b.value - a.value).slice(0, 3).map(h => h.label).join(', ') || '-'}`}
+            recommendation="Tingkatkan staffing pada jam sibuk."
           >
             {stats?.peakHours?.length ? (
               <InteractiveBarChart data={stats.peakHours} color={COLORS.warning} />
@@ -664,9 +674,8 @@ function DashboardContent() {
           <ChartCard
             title="Dampak Lalu Lintas"
             description="Pengaruh kondisi lalu lintas terhadap pengiriman"
-            explanation="Grafik batang ini membandingkan jumlah pesanan berdasarkan kondisi lalu lintas (Low, Medium, High). Berguna untuk memahami bagaimana lalu lintas mempengaruhi waktu delivery dan keberhasilan pengiriman."
-            insight={`Volume tertinggi pada lalu lintas: ${stats?.trafficImpact?.sort((a, b) => b.value - a.value)[0]?.label || '-'}.`}
-            recommendation="Gunakan data ini untuk estimasi waktu pengiriman yang lebih akurat dan informasikan ke pelanggan saat kondisi lalu lintas padat."
+            insight={`Tertinggi pada: ${stats?.trafficImpact?.sort((a, b) => b.value - a.value)[0]?.label || '-'} traffic.`}
+            recommendation="Gunakan untuk estimasi waktu pengiriman yang lebih akurat."
           >
             {stats?.trafficImpact?.length ? (
               <InteractiveBarChart data={stats.trafficImpact} color={COLORS.accent} />
